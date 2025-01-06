@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styling.css">
+    <title>Quantum Circuit Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Quantum Circuit Simulator</h1>
+    <form id="circuit-form">
+        <label for="num_qubits">Number of Qubits:</label>
+        <input type="number" id="num_qubits" name="num_qubits" min="1" value="2" required>
+        <h2>Gates</h2>
+        <div id="gates">
+            <div>
+                <label for="gate-type-0">Gate Type:</label>
+                <select id="gate-type-0" name="gates[0][type]" onchange="toggleControlQubit(0)">
+                    <option value="h">Hadamard</option>
+                    <option value="cx">CNOT</option>
+                </select>
+                <label for="gate-target-0">Target Qubit:</label>
+                <input type="number" id="gate-target-0" name="gates[0][target]" min="0" required>
+                <div id="control-qubit-0" class="control-qubit" style="display: none;">
+                    <label for="gate-control-0" class="control-label">Control Qubit:</label>
+                    <input type="number" id="gate-control-0" name="gates[0][control]" min="0" class="control-input">
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="addGate()">Add Gate</button>
+        <button type="submit">Simulate</button>
+    </form>
+    <canvas id="resultsChart" width="400" height="200"></canvas>
+    <pre id="results"></pre>
+
+    <script>
+        let gateCount = 1;
+
+        function addGate() {
+            const gatesDiv = document.getElementById('gates');
+            const newGateDiv = document.createElement('div');
+            newGateDiv.innerHTML = `
+                <label for="gate-type-${gateCount}">Gate Type:</label>
+                <select id="gate-type-${gateCount}" name="gates[${gateCount}][type]" onchange="toggleControlQubit(${gateCount})">
+                    <option value="h">Hadamard</option>
+                    <option value="cx">CNOT</option>
+                </select>
+                <label for="gate-target-${gateCount}">Target Qubit:</label>
+                <input type="number" id="gate-target-${gateCount}" name="gates[${gateCount}][target]" min="0" required>
+                <div id="control-qubit-${gateCount}" class="control-qubit" style="display: none;">
+                    <label for="gate-control-${gateCount}" class="control-label">Control Qubit:</label>
+                    <input type="number" id="gate-control-${gateCount}" name="gates[${gateCount}][control]" min="0" class="control-input">
+                </div>
+            `;
+            gatesDiv.appendChild(newGateDiv);
+            gateCount++;
+        }
+
+        function toggleControlQubit(index) {
+            const gateType = document.getElementById(`gate-type-${index}`).value;
+            const controlQubitDiv = document.getElementById(`control-qubit-${index}`);
+            if (gateType === 'cx') {
+                controlQubitDiv.style.display = 'block';
+            } else {
+                controlQubitDiv.style.display = 'none';
+            }
+        }
+
+        function applyHadamard(state, qubit, numQubits) {
+            const h = [[1, 1], [1, -1]].map(row => row.map(val => val / Math.sqrt(2)));
+            const newState = new Array(state.length).fill(0);
+            for (let i = 0; i < state.length; i++) {
+                const bit = (i >> qubit) & 1;
+                for (let j = 0; j < 2; j++) {
+                    const newIndex = i ^ (bit << qubit) ^ (j << qubit);
+                    newState[newIndex] += h[bit][j] * state[i];
+                }
+            }
+            return newState;
+        }
+
+        function applyCNOT(state, control, target, numQubits) {
+            const newState = new Array(state.length).fill(0);
+            for (let i = 0; i < state.length; i++) {
+                if ((i >> control) & 1) {
+                    const newIndex = i ^ (1 << target);
+                    newState[newIndex] = state[i];
+                } else {
+                    newState[i] = state[i];
+                }
+            }
+            return newState;
+        }
+
+        function simulateCircuit(numQubits, gates) {
+            let state = new Array(2 ** numQubits).fill(0);
+            state[0] = 1; // Start with |0...0> state
+
+            gates.forEach(gate => {
+                if (gate.type === 'h') {
+                    state = applyHadamard(state, gate.target, numQubits);
+                } else if (gate.type === 'cx') {
+                    state = applyCNOT(state, gate.control, gate.target, numQubits);
+                }
+            });
+
+            const probabilities = state.map(amplitude => Math.abs(amplitude) ** 2);
+            const result = {
+                stateVector: state,
+                probabilities: {}
+            };
+            probabilities.forEach((prob, index) => {
+                result.probabilities[index.toString(2).padStart(numQubits, '0')] = prob;
+            });
+
+            return result;
+        }
+
+        function plotResults(probabilities) {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            const labels = Object.keys(probabilities);
+            const data = Object.values(probabilities);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('circuit-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const numQubits = parseInt(formData.get('num_qubits'));
+            const gates = [];
+            for (let i = 0; i < gateCount; i++) {
+                const type = formData.get(`gates[${i}][type]`);
+                const target = parseInt(formData.get(`gates[${i}][target]`));
+                const control = formData.get(`gates[${i}][control]`);
+                const gate = { type, target };
+                if (type === 'cx') {
+                    gate.control = parseInt(control);
+                }
+                gates.push(gate);
+            }
+
+            const result = simulateCircuit(numQubits, gates);
+            document.getElementById('results').textContent = `State Vector: ${JSON.stringify(result.stateVector, null, 2)}\n\nProbabilities: ${JSON.stringify(result.probabilities, null, 2)}`;
+            plotResults(result.probabilities);
+        });
+    </script>
+</body>
+</html>
