@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="styling.css">
     <title>Quantum Circuit Simulator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
 </head>
 <body>
     <h1>Quantum Circuit Simulator</h1>
@@ -19,6 +20,11 @@
                 <select id="gate-type-0" name="gates[0][type]" onchange="toggleControlQubit(0)">
                     <option value="h">Hadamard</option>
                     <option value="cx">CNOT</option>
+                    <option value="x">Pauli-X</option>
+                    <option value="y">Pauli-Y</option>
+                    <option value="z">Pauli-Z</option>
+                    <option value="phase">Phase</option>
+                    <option value="t">T</option>
                 </select>
                 <label for="gate-target-0">Target Qubit:</label>
                 <input type="number" id="gate-target-0" name="gates[0][target]" min="0" required>
@@ -31,8 +37,13 @@
         <button type="button" onclick="addGate()">Add Gate</button>
         <button type="submit">Simulate</button>
     </form>
-    <canvas id="resultsChart" width="400" height="200"></canvas>
-    <pre id="results"></pre>
+    <h2>Results</h2>
+    <div class="results-container">
+        <pre id="results"></pre>
+    </div>
+    <div class="plot-container">
+        <canvas id="resultsChart" width="400" height="200"></canvas>
+    </div>
 
     <script>
         let gateCount = 1;
@@ -45,6 +56,11 @@
                 <select id="gate-type-${gateCount}" name="gates[${gateCount}][type]" onchange="toggleControlQubit(${gateCount})">
                     <option value="h">Hadamard</option>
                     <option value="cx">CNOT</option>
+                    <option value="x">Pauli-X</option>
+                    <option value="y">Pauli-Y</option>
+                    <option value="z">Pauli-Z</option>
+                    <option value="phase">Phase</option>
+                    <option value="t">T</option>
                 </select>
                 <label for="gate-target-${gateCount}">Target Qubit:</label>
                 <input type="number" id="gate-target-${gateCount}" name="gates[${gateCount}][target]" min="0" required>
@@ -69,19 +85,19 @@
 
         function applyHadamard(state, qubit, numQubits) {
             const h = [[1, 1], [1, -1]].map(row => row.map(val => val / Math.sqrt(2)));
-            const newState = new Array(state.length).fill(0);
+            const newState = new Array(state.length).fill(math.complex(0, 0));
             for (let i = 0; i < state.length; i++) {
                 const bit = (i >> qubit) & 1;
                 for (let j = 0; j < 2; j++) {
                     const newIndex = i ^ (bit << qubit) ^ (j << qubit);
-                    newState[newIndex] += h[bit][j] * state[i];
+                    newState[newIndex] = math.add(newState[newIndex], math.multiply(h[bit][j], state[i]));
                 }
             }
             return newState;
         }
 
         function applyCNOT(state, control, target, numQubits) {
-            const newState = new Array(state.length).fill(0);
+            const newState = new Array(state.length).fill(math.complex(0, 0));
             for (let i = 0; i < state.length; i++) {
                 if ((i >> control) & 1) {
                     const newIndex = i ^ (1 << target);
@@ -93,19 +109,71 @@
             return newState;
         }
 
+        function applyPauliX(state, qubit, numQubits) {
+            const newState = new Array(state.length).fill(math.complex(0, 0));
+            for (let i = 0; i < state.length; i++) {
+                const newIndex = i ^ (1 << qubit);
+                newState[newIndex] = state[i];
+            }
+            return newState;
+        }
+
+        function applyPauliY(state, qubit, numQubits) {
+            const newState = new Array(state.length).fill(math.complex(0, 0));
+            for (let i = 0; i < state.length; i++) {
+                const newIndex = i ^ (1 << qubit);
+                newState[newIndex] = math.multiply(state[i], (i & (1 << qubit) ? math.complex(0, -1) : math.complex(0, 1)));
+            }
+            return newState;
+        }
+
+        function applyPauliZ(state, qubit, numQubits) {
+            const newState = state.slice();
+            for (let i = 0; i < state.length; i++) {
+                if (i & (1 << qubit)) {
+                    newState[i] = math.multiply(newState[i], -1);
+                }
+            }
+            return newState;
+        }
+
+        function applyPhase(state, qubit, numQubits, phase) {
+            const newState = state.slice();
+            for (let i = 0; i < state.length; i++) {
+                if (i & (1 << qubit)) {
+                    newState[i] = math.multiply(newState[i], math.exp(math.complex(0, phase)));
+                }
+            }
+            return newState;
+        }
+
+        function applyT(state, qubit, numQubits) {
+            return applyPhase(state, qubit, numQubits, Math.PI / 4);
+        }
+
         function simulateCircuit(numQubits, gates) {
-            let state = new Array(2 ** numQubits).fill(0);
-            state[0] = 1; // Start with |0...0> state
+            let state = new Array(2 ** numQubits).fill(math.complex(0, 0));
+            state[0] = math.complex(1, 0); // Start with |0...0> state
 
             gates.forEach(gate => {
                 if (gate.type === 'h') {
                     state = applyHadamard(state, gate.target, numQubits);
                 } else if (gate.type === 'cx') {
                     state = applyCNOT(state, gate.control, gate.target, numQubits);
+                } else if (gate.type === 'x') {
+                    state = applyPauliX(state, gate.target, numQubits);
+                } else if (gate.type === 'y') {
+                    state = applyPauliY(state, gate.target, numQubits);
+                } else if (gate.type === 'z') {
+                    state = applyPauliZ(state, gate.target, numQubits);
+                } else if (gate.type === 'phase') {
+                    state = applyPhase(state, gate.target, numQubits, gate.phase);
+                } else if (gate.type === 't') {
+                    state = applyT(state, gate.target, numQubits);
                 }
             });
 
-            const probabilities = state.map(amplitude => Math.abs(amplitude) ** 2);
+            const probabilities = state.map(amplitude => math.abs(amplitude) ** 2);
             const result = {
                 stateVector: state,
                 probabilities: {}

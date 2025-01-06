@@ -7,14 +7,30 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    justify-content: flex-start; /* Changed from center to flex-start */
+    min-height: 100vh;
     animation: fadeIn 2s ease-in-out;
+    position: relative;
+    overflow-x: hidden; /* Ensure horizontal overflow is hidden */
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('circuit.svg') no-repeat center center;
+    background-size: cover;
+    opacity: 0.1;
+    animation: drawCircuit 5s linear infinite;
 }
 
 h1, h2 {
     color: #bb86fc;
     animation: slideIn 1s ease-in-out;
+    z-index: 1;
 }
 
 form {
@@ -23,11 +39,14 @@ form {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation: popIn 1s ease-in-out;
+    z-index: 1;
+    margin-bottom: 20px; /* Add margin to separate from results */
 }
 
 label {
     display: block;
     margin: 10px 0 5px;
+    z-index: 1;
 }
 
 input, select {
@@ -39,6 +58,7 @@ input, select {
     background-color: #333333;
     color: #ffffff;
     animation: fadeIn 1.5s ease-in-out;
+    z-index: 1;
 }
 
 button {
@@ -50,6 +70,7 @@ button {
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
     animation: bounce 2s infinite;
+    z-index: 1;
 }
 
 button:hover {
@@ -57,27 +78,80 @@ button:hover {
     background-color: #3700b3;
 }
 
-pre {
+.results-container {
     background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+    max-width: 90%; /* Ensure container does not get too wide */
+    width: 100%;
+}
+
+.results-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    box-sizing: border-box;
+    animation: borderGlow 2s linear infinite;
+}
+
+pre {
+    background-color: #2e2e2e;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 600px;
-    overflow-x: auto;
     color: #ffffff;
     font-family: 'Courier New', Courier, monospace;
     margin-top: 20px;
     animation: fadeIn 2s ease-in-out;
+    z-index: 1;
+    white-space: pre-wrap; /* Allows text to wrap */
+    overflow: visible; /* Ensures no scrolling */
+    max-height: 400px; /* Limit height to prevent overflow */
+    overflow-y: auto; /* Add vertical scroll if needed */
 }
 
-pre::before {
-    content: "Results:";
-    display: block;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #bb86fc;
-    animation: slideIn 1s ease-in-out;
+.plot-container {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+    max-width: 90%; /* Ensure container does not get too wide */
+    width: 100%;
+}
+
+.plot-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    box-sizing: border-box;
+    animation: borderGlow 2s linear infinite;
 }
 
 @keyframes fadeIn {
@@ -93,4 +167,16 @@ pre::before {
 @keyframes popIn {
     from { transform: scale(0); }
     to { transform: scale(1); }
+}
+
+
+@keyframes drawCircuit {
+    0% { opacity: 0; }
+    100% { opacity: 0.1; }
+}
+
+@keyframes borderGlow {
+    0% { border-color: #bb86fc; }
+    50% { border-color: #3700b3; }
+    100% { border-color: #bb86fc; }
 }
