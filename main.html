@@ -10,37 +10,39 @@
 </head>
 <body>
     <h1>Quantum Circuit Simulator</h1>
-    <form id="circuit-form">
-        <label for="num_qubits">Number of Qubits:</label>
-        <input type="number" id="num_qubits" name="num_qubits" min="1" value="2" required>
-        <h2>Gates</h2>
-        <div id="gates">
-            <div>
-                <label for="gate-type-0">Gate Type:</label>
-                <select id="gate-type-0" name="gates[0][type]" onchange="toggleControlQubit(0)">
-                    <option value="h">Hadamard</option>
-                    <option value="cx">CNOT</option>
-                    <option value="x">Pauli-X</option>
-                    <option value="y">Pauli-Y</option>
-                    <option value="z">Pauli-Z</option>
-                    <option value="phase">Phase</option>
-                    <option value="t">T</option>
-                </select>
-                <label for="gate-target-0">Target Qubit:</label>
-                <input type="number" id="gate-target-0" name="gates[0][target]" min="0" required>
-                <div id="control-qubit-0" class="control-qubit" style="display: none;">
-                    <label for="gate-control-0" class="control-label">Control Qubit:</label>
-                    <input type="number" id="gate-control-0" name="gates[0][control]" min="0" class="control-input">
-                </div>
-                <div id="phase-angle-0" class="phase-angle" style="display: none;">
-                    <label for="gate-phase-0" class="phase-label">Phase Angle:</label>
-                    <input type="number" id="gate-phase-0" name="gates[0][phase]" step="0.01" class="phase-input">
+    <div class="gui-container">
+        <form id="circuit-form">
+            <label for="num_qubits">Number of Qubits:</label>
+            <input type="number" id="num_qubits" name="num_qubits" min="1" value="2" required>
+            <h2>Gates</h2>
+            <div id="gates">
+                <div>
+                    <label for="gate-type-0">Gate Type:</label>
+                    <select id="gate-type-0" name="gates[0][type]" onchange="toggleControlQubit(0)">
+                        <option value="h">Hadamard</option>
+                        <option value="cx">CNOT</option>
+                        <option value="x">Pauli-X</option>
+                        <option value="y">Pauli-Y</option>
+                        <option value="z">Pauli-Z</option>
+                        <option value="phase">Phase</option>
+                        <option value="t">T</option>
+                    </select>
+                    <label for="gate-target-0">Target Qubit:</label>
+                    <input type="number" id="gate-target-0" name="gates[0][target]" min="0" required>
+                    <div id="control-qubit-0" class="control-qubit" style="display: none;">
+                        <label for="gate-control-0" class="control-label">Control Qubit:</label>
+                        <input type="number" id="gate-control-0" name="gates[0][control]" min="0" class="control-input">
+                    </div>
+                    <div id="phase-angle-0" class="phase-angle" style="display: none;">
+                        <label for="gate-phase-0" class="phase-label">Phase Angle:</label>
+                        <input type="number" id="gate-phase-0" name="gates[0][phase]" step="0.01" class="phase-input">
+                    </div>
                 </div>
             </div>
-        </div>
-        <button type="button" onclick="addGate()">Add Gate</button>
-        <button type="submit">Simulate</button>
-    </form>
+            <button type="button" onclick="addGate()">Add Gate</button>
+            <button type="submit">Simulate</button>
+        </form>
+    </div>
     <h2>Results</h2>
     <div class="results-container">
         <pre id="results"></pre>

@@ -14,6 +14,35 @@ body {
     overflow-x: hidden; /* Ensure horizontal overflow is hidden */
 }
 
+.gui-container {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+    max-width: 90%; /* Ensure container does not get too wide */
+    width: 100%;
+}
+
+.gui-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    box-sizing: border-box;
+    animation: borderGlow 2s linear infinite;
+}
+
 body::before {
     content: '';
     position: absolute;
