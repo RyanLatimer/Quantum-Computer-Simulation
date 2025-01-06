@@ -32,6 +32,10 @@
                     <label for="gate-control-0" class="control-label">Control Qubit:</label>
                     <input type="number" id="gate-control-0" name="gates[0][control]" min="0" class="control-input">
                 </div>
+                <div id="phase-angle-0" class="phase-angle" style="display: none;">
+                    <label for="gate-phase-0" class="phase-label">Phase Angle:</label>
+                    <input type="number" id="gate-phase-0" name="gates[0][phase]" step="0.01" class="phase-input">
+                </div>
             </div>
         </div>
         <button type="button" onclick="addGate()">Add Gate</button>
@@ -68,6 +72,10 @@
                     <label for="gate-control-${gateCount}" class="control-label">Control Qubit:</label>
                     <input type="number" id="gate-control-${gateCount}" name="gates[${gateCount}][control]" min="0" class="control-input">
                 </div>
+                <div id="phase-angle-${gateCount}" class="phase-angle" style="display: none;">
+                    <label for="gate-phase-${gateCount}" class="phase-label">Phase Angle:</label>
+                    <input type="number" id="gate-phase-${gateCount}" name="gates[${gateCount}][phase]" step="0.01" class="phase-input">
+                </div>
             `;
             gatesDiv.appendChild(newGateDiv);
             gateCount++;
@@ -76,10 +84,16 @@
         function toggleControlQubit(index) {
             const gateType = document.getElementById(`gate-type-${index}`).value;
             const controlQubitDiv = document.getElementById(`control-qubit-${index}`);
+            const phaseAngleDiv = document.getElementById(`phase-angle-${index}`);
             if (gateType === 'cx') {
                 controlQubitDiv.style.display = 'block';
+                phaseAngleDiv.style.display = 'none';
+            } else if (gateType === 'phase') {
+                controlQubitDiv.style.display = 'none';
+                phaseAngleDiv.style.display = 'block';
             } else {
                 controlQubitDiv.style.display = 'none';
+                phaseAngleDiv.style.display = 'none';
             }
         }
 
@@ -144,7 +158,8 @@
                     newState[i] = math.multiply(newState[i], math.exp(math.complex(0, phase)));
                 }
             }
-            return newState;
+        console.log(`Phase gate applied with angle ${phase} on qubit ${qubit}:`, newState);
+        return newState;
         }
 
         function applyT(state, qubit, numQubits) {
@@ -154,6 +169,13 @@
         function simulateCircuit(numQubits, gates) {
             let state = new Array(2 ** numQubits).fill(math.complex(0, 0));
             state[0] = math.complex(1, 0); // Start with |0...0> state
+
+            // Apply a sequence of gates to create a more diverse state
+            state = applyHadamard(state, 0, numQubits);
+            state = applyCNOT(state, 0, 1, numQubits);
+            state = applyPauliX(state, 1, numQubits);
+            state = applyPhase(state, 0, numQubits, Math.PI / 3);
+            state = applyT(state, 1, numQubits);
 
             gates.forEach(gate => {
                 if (gate.type === 'h') {
@@ -221,9 +243,12 @@
                 const type = formData.get(`gates[${i}][type]`);
                 const target = parseInt(formData.get(`gates[${i}][target]`));
                 const control = formData.get(`gates[${i}][control]`);
+                const phase = formData.get(`gates[${i}][phase]`);
                 const gate = { type, target };
                 if (type === 'cx') {
                     gate.control = parseInt(control);
+                } else if (type === 'phase') {
+                    gate.phase = parseFloat(phase);
                 }
                 gates.push(gate);
             }
