@@ -10,8 +10,9 @@
 </head>
 <body>
     <h1>Quantum Circuit Simulator</h1>
-    <div class="gui-container">
+        <div class="gui-container">
         <form id="circuit-form">
+            <div id="error-message" style="color: red; display: none;"></div>
             <label for="num_qubits">Number of Qubits:</label>
             <input type="number" id="num_qubits" name="num_qubits" min="1" value="2" required>
             <h2>Gates</h2>
@@ -247,11 +248,27 @@
             const formData = new FormData(event.target);
             const numQubits = parseInt(formData.get('num_qubits'));
             const gates = [];
+            let isValid = true;
+            let errorMessage = '';
+
             for (let i = 0; i < gateCount; i++) {
                 const type = formData.get(`gates[${i}][type]`);
                 const target = parseInt(formData.get(`gates[${i}][target]`));
                 const control = formData.get(`gates[${i}][control]`);
                 const phase = formData.get(`gates[${i}][phase]`);
+
+                if (target >= numQubits || target < 0) {
+                    isValid = false;
+                    errorMessage = `Invalid target qubit value for gate ${i + 1}. It must be between 0 and ${numQubits - 1}.`;
+                    break;
+                }
+
+                if (type === 'cx' && (control >= numQubits || control < 0)) {
+                    isValid = false;
+                    errorMessage = `Invalid control qubit value for CNOT gate ${i + 1}. It must be between 0 and ${numQubits - 1}.`;
+                    break;
+                }
+
                 const gate = { type, target };
                 if (type === 'cx') {
                     gate.control = parseInt(control);
@@ -259,6 +276,14 @@
                     gate.phase = parseFloat(phase);
                 }
                 gates.push(gate);
+            }
+
+            if (!isValid) {
+                document.getElementById('error-message').textContent = errorMessage;
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('error-message').style.display = 'none';
             }
 
             const result = simulateCircuit(numQubits, gates);
