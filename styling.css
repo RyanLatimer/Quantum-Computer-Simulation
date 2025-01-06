@@ -9,10 +9,12 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    animation: fadeIn 2s ease-in-out;
 }
 
 h1, h2 {
     color: #bb86fc;
+    animation: slideIn 1s ease-in-out;
 }
 
 form {
@@ -20,6 +22,7 @@ form {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: popIn 1s ease-in-out;
 }
 
 label {
@@ -35,6 +38,7 @@ input, select {
     border-radius: 5px;
     background-color: #333333;
     color: #ffffff;
+    animation: fadeIn 1.5s ease-in-out;
 }
 
 button {
@@ -45,6 +49,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
+    animation: bounce 2s infinite;
 }
 
 button:hover {
@@ -63,6 +68,7 @@ pre {
     color: #ffffff;
     font-family: 'Courier New', Courier, monospace;
     margin-top: 20px;
+    animation: fadeIn 2s ease-in-out;
 }
 
 pre::before {
@@ -71,4 +77,20 @@ pre::before {
     font-weight: bold;
     margin-bottom: 10px;
     color: #bb86fc;
+    animation: slideIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes popIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
 }
