@@ -176,6 +176,10 @@
             state = applyPauliX(state, 1, numQubits);
             state = applyPhase(state, 0, numQubits, Math.PI / 3);
             state = applyT(state, 1, numQubits);
+            state = applyPauliY(state, 0, numQubits);
+            state = applyPauliZ(state, 1, numQubits);
+            state = applyHadamard(state, 1, numQubits);
+            state = applyCNOT(state, 1, 0, numQubits);
 
             gates.forEach(gate => {
                 if (gate.type === 'h') {
