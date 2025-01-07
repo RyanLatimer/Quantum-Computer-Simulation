@@ -14,6 +14,11 @@ body {
     overflow-x: hidden; /* Ensure horizontal overflow is hidden */
 }
 
+.link-container {
+    position: relative;
+    z-index: 10;
+}
+
 .link-container a {
     display: inline-block;
     padding: 10px 20px;
