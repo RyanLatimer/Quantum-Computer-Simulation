@@ -7,7 +7,7 @@ This project uses matrix math in Javascript to simulate the effect of quantum lo
 The time taken to process the quantum logic gates increases exponentially with the number of qubits. The program is not optimized for large numbers of qubits.
 
 ### How to use:
-1. Navigate to the website listed under the demo. [Click here.](https://ryanlatimer.github.io/Quantum-Computer_Simulation)
+1. Navigate to the website listed under the demo. [Click here.](https://ryanlatimer.github.io/Quantum-Computer-Simulation)
 2. Create a series of logic gates and input the qubits you want to pass through the logic to simulate quantum logic.
 3. View the results of the simulation in text and graphical form.
 4. Create another simulation.
